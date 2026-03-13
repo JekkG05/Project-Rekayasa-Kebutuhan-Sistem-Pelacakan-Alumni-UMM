@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Alumni;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $totalAlumni = Alumni::count();
+        $teridentifikasi = Alumni::where('status_pelacakan', 'Teridentifikasi')->count();
+        $perluVerifikasi = Alumni::where('status_pelacakan', 'Perlu Verifikasi')->count();
+        $belumDitemukan = Alumni::where('status_pelacakan', 'Belum Ditemukan')->count();
+
+        return view('dashboard', compact(
+            'totalAlumni',
+            'teridentifikasi',
+            'perluVerifikasi',
+            'belumDitemukan'
+        ));
+    }
+}
