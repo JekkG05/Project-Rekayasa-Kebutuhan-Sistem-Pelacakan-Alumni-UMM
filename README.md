@@ -40,8 +40,9 @@ php artisan migrate
 php artisan serve
 npm run dev
 ```
-##Screenshot Sistem
-##Login
+Screenshot Sistem
+
+Login
 <img width="1902" height="909" alt="563025817-519c14d0-e7fc-4dd4-9fd6-fc48c6d6fc5b" src="https://github.com/user-attachments/assets/cb6ab515-d3c6-4436-aa95-3181f05df33a" />
 
 ##Dashboard
