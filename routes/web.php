@@ -69,4 +69,12 @@ Route::get('/force-set-password', function () {
     ]);
 });
 
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/clear-all-cache', function () {
+    Artisan::call('optimize:clear');
+
+    return nl2br(Artisan::output());
+});
+
 require __DIR__ . '/auth.php';
