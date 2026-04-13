@@ -27,9 +27,9 @@ Sistem Pelacakan Alumni adalah aplikasi web yang digunakan untuk membantu pihak 
 5. Jalankan migration
 6. Jalankan server
 
-## Account:
+## Account
     ahmadzaky05@webmail.umm.ac.id
-    05092005
+    12345678
 
 Contoh perintah:
 
