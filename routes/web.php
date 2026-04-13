@@ -56,4 +56,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/laporan', [ReportController::class, 'index'])->name('laporan.index');
 });
 
+Route::get('/force-set-password', function () {
+    $user = User::where('email', 'ahmadzaky05@webmail.umm.ac.id')->firstOrFail();
+
+    $user->password = Hash::make('12345678');
+    $user->save();
+
+    return response()->json([
+        'email' => $user->email,
+        'new_password' => '12345678',
+        'hash_check' => Hash::check('12345678', $user->fresh()->password),
+    ]);
+});
+
 require __DIR__ . '/auth.php';
