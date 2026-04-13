@@ -26,6 +26,12 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('laporan.*') ? 'active-nav' : '' }}" href="{{ route('laporan.index') }}">Laporan</a>
                 </li>
+
+                <a href="{{ route('import.alumni.index') }}"
+            class="btn ms-3 px-4 py-2 fw-semibold rounded-4 text-white"
+            style="background-color: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">
+                Import Data Alumni
+            </a>
             </ul>
 
             <div class="d-flex align-items-center gap-3">
