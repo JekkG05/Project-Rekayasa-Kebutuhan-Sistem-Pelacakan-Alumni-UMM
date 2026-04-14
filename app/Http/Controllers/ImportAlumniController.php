@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\AlumniImport;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use App\Models\Alumni;
 
 class ImportAlumniController extends Controller
 {
@@ -23,8 +24,29 @@ class ImportAlumniController extends Controller
         ]);
 
         try {
-            // Proses import menggunakan Maatwebsite Excel dengan chunking
-            Excel::import(new AlumniImport, $request->file('file_excel'))->chunkSize(1000);  // Menentukan ukuran chunk
+            // Membaca file Excel
+            $file = $request->file('file_excel');
+            $spreadsheet = IOFactory::load($file);
+
+            // Mengambil data dari sheet pertama
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, true);  // Mengambil data dalam bentuk array
+
+            // Proses untuk menyimpan data ke database
+            foreach ($rows as $row) {
+                // Skip header row (Baris pertama yang biasanya berisi nama kolom)
+                if ($row['A'] == 'NIM') continue;
+
+                // Proses import data ke database
+                Alumni::create([
+                    'nim' => $row['A'],  // NIM dari kolom A
+                    'nama' => $row['B'], // Nama dari kolom B
+                    'tahun_masuk' => $row['C'], // Tahun Masuk dari kolom C
+                    'tahun_lulus' => $row['D'], // Tahun Lulus dari kolom D
+                    'fakultas' => $row['E'], // Fakultas dari kolom E
+                    'program_studi' => $row['F'], // Program Studi dari kolom F
+                ]);
+            }
 
             // Redirect ke halaman alumni.index dengan pesan sukses
             return redirect()->route('alumni.index')->with('success', 'Data alumni berhasil diimpor.');
