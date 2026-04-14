@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use App\Models\Alumni;
 
 class ImportAlumniController extends Controller
@@ -20,31 +18,27 @@ class ImportAlumniController extends Controller
     {
         // Validasi file yang di-upload
         $request->validate([
-            'file_excel' => 'required|mimes:xlsx,xls,csv|max:10240',  // max:10240 berarti max 10MB
+            'file_csv' => 'required|mimes:csv|max:10240',  // max:10240 berarti max 10MB
         ]);
 
         try {
-            // Membaca file Excel
-            $file = $request->file('file_excel');
-            $spreadsheet = IOFactory::load($file);
+            // Membaca file CSV
+            $file = $request->file('file_csv');
+            $data = array_map('str_getcsv', file($file));
 
-            // Mengambil data dari sheet pertama
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray(null, true, true, true);  // Mengambil data dalam bentuk array
-
-            // Proses untuk menyimpan data ke database
-            foreach ($rows as $row) {
+            // Looping melalui data CSV dan menyimpannya ke database
+            foreach ($data as $row) {
                 // Skip header row (Baris pertama yang biasanya berisi nama kolom)
-                if ($row['A'] == 'NIM') continue;
+                if ($row[0] == 'NIM') continue;
 
                 // Proses import data ke database
                 Alumni::create([
-                    'nim' => $row['A'],  // NIM dari kolom A
-                    'nama' => $row['B'], // Nama dari kolom B
-                    'tahun_masuk' => $row['C'], // Tahun Masuk dari kolom C
-                    'tahun_lulus' => $row['D'], // Tahun Lulus dari kolom D
-                    'fakultas' => $row['E'], // Fakultas dari kolom E
-                    'program_studi' => $row['F'], // Program Studi dari kolom F
+                    'nim' => $row[0],  // NIM dari kolom pertama
+                    'nama' => $row[1], // Nama dari kolom kedua
+                    'tahun_masuk' => $row[2], // Tahun Masuk dari kolom ketiga
+                    'tahun_lulus' => $row[3], // Tahun Lulus dari kolom keempat
+                    'fakultas' => $row[4], // Fakultas dari kolom kelima
+                    'program_studi' => $row[5], // Program Studi dari kolom keenam
                 ]);
             }
 
