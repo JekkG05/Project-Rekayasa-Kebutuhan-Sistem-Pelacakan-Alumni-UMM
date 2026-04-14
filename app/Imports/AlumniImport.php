@@ -4,20 +4,27 @@ namespace App\Imports;
 
 use App\Models\Alumni;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Support\Collection;
 
-class AlumniImport implements ToModel
+class AlumniImport implements ToCollection, WithHeadingRow
 {
-    // Fungsi untuk mengonversi baris Excel menjadi model Alumni
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        // Sesuaikan kolom dengan nama kolom yang ada di file Excel
-        return new Alumni([
-            'nim' => $row['nim'],               // Misal nim ada di kolom pertama
-            'nama' => $row['nama_lulusan'],      // Nama alumni di kolom kedua
-            'tahun_masuk' => $row['tahun_masuk'], // Tahun masuk di kolom ketiga
-            'tanggal_lulus' => $row['tanggal_lulus'], // Tanggal lulus di kolom keempat
-            'fakultas' => $row['fakultas'],      // Fakultas di kolom kelima
-            'program_studi' => $row['program_studi'], // Program studi di kolom keenam
-        ]);
+        foreach ($rows as $row) {
+            // Validasi data yang ada pada setiap baris, jika perlu
+            Alumni::updateOrCreate(
+                ['nim' => $row['nim']],
+                [
+                    'nama' => $row['nama_lulusan'] ?? null,
+                    'tahun_masuk' => $row['tahun_masuk'] ?? null,
+                    'tahun_lulus' => $row['tahun_lulus'] ?? null,
+                    'fakultas' => $row['fakultas'] ?? null,
+                    'program_studi' => $row['program_studi'] ?? null,
+                    'status' => $row['status'] ?? 'Belum Ditemukan'
+                ]
+            );
+        }
     }
 }

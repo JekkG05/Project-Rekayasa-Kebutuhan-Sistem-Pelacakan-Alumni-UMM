@@ -23,8 +23,8 @@ class ImportAlumniController extends Controller
         ]);
 
         try {
-            // Proses import menggunakan Maatwebsite Excel
-            Excel::import(new AlumniImport, $request->file('file_excel'));
+            // Proses import menggunakan Maatwebsite Excel dengan chunking
+            Excel::import(new AlumniImport, $request->file('file_excel'))->chunkSize(1000);  // Menentukan ukuran chunk
 
             // Redirect ke halaman alumni.index dengan pesan sukses
             return redirect()->route('alumni.index')->with('success', 'Data alumni berhasil diimpor.');
