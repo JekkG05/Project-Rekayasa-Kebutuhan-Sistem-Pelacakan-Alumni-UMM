@@ -25,7 +25,7 @@ class ImportAlumniController extends Controller
         try {
             // Membaca file Excel
             $file = $request->file('file_excel');
-            $spreadsheet = IOFactory::load($file);
+            $spreadsheet = IOFactory::load($file);  // Memuat file Excel
 
             // Mengambil data dari sheet pertama
             $sheet = $spreadsheet->getActiveSheet();

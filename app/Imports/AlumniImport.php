@@ -1,58 +1,58 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Imports;
 
-use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Alumni;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Collection;
 
-class ImportAlumniController extends Controller
+class AlumniImport
 {
-    // Fungsi untuk menampilkan form import alumni
-    public function index()
+    /**
+     * Mengolah data Excel dan mengimpor ke database
+     *
+     * @param \Illuminate\Support\Collection $rows
+     * @return void
+     */
+    public function collection(Collection $rows)
     {
-        return view('alumni.import');
+        foreach ($rows as $row) {
+            // Skip header row jika ada (Baris pertama yang biasanya berisi nama kolom)
+            if ($row['A'] == 'NIM') continue;
+
+            // Proses import data ke database
+            Alumni::updateOrCreate(
+                ['nim' => $row['A']], // NIM dari kolom A
+                [
+                    'nama' => $row['B'] ?? null, // Nama dari kolom B
+                    'tahun_masuk' => $row['C'] ?? null, // Tahun Masuk dari kolom C
+                    'tahun_lulus' => $row['D'] ?? null, // Tahun Lulus dari kolom D
+                    'fakultas' => $row['E'] ?? null, // Fakultas dari kolom E
+                    'program_studi' => $row['F'] ?? null, // Program Studi dari kolom F
+                    'status' => $row['G'] ?? 'Belum Ditemukan' // Status dari kolom G
+                ]
+            );
+        }
     }
 
-    // Fungsi untuk menangani proses import alumni
-    public function store(Request $request)
+    /**
+     * Membaca file Excel dan mengembalikan koleksi data
+     *
+     * @param string $filePath
+     * @return \Illuminate\Support\Collection
+     */
+    public function loadFile($filePath)
     {
-        // Validasi file yang di-upload
-        $request->validate([
-            'file_excel' => 'required|mimes:xlsx,xls,csv|max:10240',  // max:10240 berarti max 10MB
-        ]);
+        // Membaca file Excel menggunakan PhpSpreadsheet
+        $spreadsheet = IOFactory::load($filePath);
 
-        try {
-            // Membaca file Excel
-            $file = $request->file('file_excel');
-            $spreadsheet = IOFactory::load($file);
+        // Mengambil data dari sheet pertama
+        $sheet = $spreadsheet->getActiveSheet();
 
-            // Mengambil data dari sheet pertama
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray(null, true, true, true);  // Mengambil data dalam bentuk array
+        // Mengubah data sheet ke array (Baris menjadi array)
+        $rows = $sheet->toArray(null, true, true, true);
 
-            // Proses untuk menyimpan data ke database
-            foreach ($rows as $row) {
-                // Skip header row (Baris pertama yang biasanya berisi nama kolom)
-                if ($row['A'] == 'NIM') continue;
-
-                // Proses import data ke database
-                Alumni::create([
-                    'nim' => $row['A'],  // NIM dari kolom A
-                    'nama' => $row['B'], // Nama dari kolom B
-                    'tahun_masuk' => $row['C'], // Tahun Masuk dari kolom C
-                    'tahun_lulus' => $row['D'], // Tahun Lulus dari kolom D
-                    'fakultas' => $row['E'], // Fakultas dari kolom E
-                    'program_studi' => $row['F'], // Program Studi dari kolom F
-                ]);
-            }
-
-            // Redirect ke halaman alumni.index dengan pesan sukses
-            return redirect()->route('alumni.index')->with('success', 'Data alumni berhasil diimpor.');
-
-        } catch (\Exception $e) {
-            // Menangani error jika terjadi kesalahan pada proses import
-            return back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
-        }
+        // Mengembalikan koleksi data
+        return collect($rows);
     }
 }
