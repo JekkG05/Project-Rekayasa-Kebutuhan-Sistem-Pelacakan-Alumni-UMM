@@ -3,41 +3,21 @@
 namespace App\Imports;
 
 use App\Models\Alumni;
-use Carbon\Carbon;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\ToModel;
 
-class AlumniImport implements ToCollection, WithHeadingRow
+class AlumniImport implements ToModel
 {
-    public function collection(Collection $rows)
+    // Fungsi untuk mengonversi baris Excel menjadi model Alumni
+    public function model(array $row)
     {
-        foreach ($rows as $row) {
-            $tanggalLulus = null;
-            $tahunLulus = null;
-
-            if (!empty($row['tanggal_lulus'])) {
-                try {
-                    $tanggalLulus = Carbon::parse($row['tanggal_lulus'])->format('Y-m-d');
-                    $tahunLulus = Carbon::parse($row['tanggal_lulus'])->format('Y');
-                } catch (\Throwable $e) {
-                    $tanggalLulus = null;
-                    $tahunLulus = null;
-                }
-            }
-
-            Alumni::updateOrCreate(
-                ['nim' => $row['nim'] ?? null],
-                [
-                    'nama' => $row['nama_lulusan'] ?? null,
-                    'tahun_masuk' => $row['tahun_masuk'] ?? null,
-                    'tanggal_lulus' => $tanggalLulus,
-                    'tahun_lulus' => $tahunLulus,
-                    'fakultas' => $row['fakultas'] ?? null,
-                    'prodi' => $row['program_studi'] ?? null,
-                    'status' => 'Belum Ditelusuri',
-                ]
-            );
-        }
+        // Sesuaikan kolom dengan nama kolom yang ada di file Excel
+        return new Alumni([
+            'nim' => $row['nim'],               // Misal nim ada di kolom pertama
+            'nama' => $row['nama_lulusan'],      // Nama alumni di kolom kedua
+            'tahun_masuk' => $row['tahun_masuk'], // Tahun masuk di kolom ketiga
+            'tanggal_lulus' => $row['tanggal_lulus'], // Tanggal lulus di kolom keempat
+            'fakultas' => $row['fakultas'],      // Fakultas di kolom kelima
+            'program_studi' => $row['program_studi'], // Program studi di kolom keenam
+        ]);
     }
 }
