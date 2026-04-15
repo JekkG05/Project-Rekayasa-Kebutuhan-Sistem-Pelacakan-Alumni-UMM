@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Alumni;
+use Illuminate\Support\Facades\Log;
 
 class ImportAlumniController extends Controller
 {
@@ -36,6 +37,14 @@ class ImportAlumniController extends Controller
                 // Skip header row (Baris pertama yang biasanya berisi nama kolom)
                 if ($row['A'] == 'NIM') continue;
 
+                // Debug: Log data yang diambil dari Excel
+                Log::info('Row data: ', $row);
+
+                // Validasi data sebelum disimpan
+                if (empty($row['A']) || empty($row['B']) || empty($row['C'])) {
+                    continue;  // Lewati baris jika data NIM, Nama, atau Tahun Masuk kosong
+                }
+
                 // Proses import data ke database
                 Alumni::create([
                     'nim' => $row['A'],  // NIM dari kolom A
@@ -52,6 +61,7 @@ class ImportAlumniController extends Controller
 
         } catch (\Exception $e) {
             // Menangani error jika terjadi kesalahan pada proses import
+            Log::error('Error during alumni import: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
         }
     }
